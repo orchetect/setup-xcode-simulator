@@ -70,7 +70,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: orchetect/setup-xcode-simulator@main
+    - uses: orchetect/setup-xcode-simulator@v1
       with:
         scheme: MySchemeName
         target: iOS
@@ -83,7 +83,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: orchetect/setup-xcode-simulator@main
+    - uses: orchetect/setup-xcode-simulator@v1
       with:
         workspace-path: MyProject/MyProject.xcodeproj/project.xcworkspace
         scheme: MySchemeName
@@ -97,7 +97,7 @@ jobs:
   build:
     runs-on: macos-latest
     steps:
-    - uses: orchetect/setup-xcode-simulator@main
+    - uses: orchetect/setup-xcode-simulator@v1
       with:
         scheme: MySchemeName
         target: iphone-pro-max
@@ -127,7 +127,7 @@ jobs:
     - uses: actions/checkout@main
     - name: Prepare Device Simulator
       id: sim-setup
-      uses: orchetect/setup-xcode-simulator@main
+      uses: orchetect/setup-xcode-simulator@v1
       with:
         refresh: true
         download: true
@@ -179,7 +179,7 @@ jobs:
     - uses: actions/checkout@main
     - name: Prepare Device Simulator
       id: sim-setup
-      uses: orchetect/setup-xcode-simulator@main
+      uses: orchetect/setup-xcode-simulator@v1
       with:
         refresh: true
         download: true
