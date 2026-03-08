@@ -2,6 +2,14 @@ name: 'Xcode Simulator Selector'
 author: 'Steffan Andrews'
 description: 'Dynamically find the best available Xcode device simulator.'
 inputs:
+  refresh:
+    description: 'Refresh Xcode simulators by first calling the simulator controller to refresh by listing all local simulators. This can help reduce the number of spurious issues that can occur periodically when listing and using simulators.'
+    required: false
+    default: true
+  download:
+    description: 'Asks the simulator controller to first download a relevant simulator for the platform specified by the target parameter. This can help reduce the number of spurious issues that can occur periodically when listing and using simulators.'
+    required: false
+    default: false
   workspace-path:
     description: 'Relative path to the Xcode workspace. If the target is a Swift Package that exists in the root of the repository, omit this variable.'
     required: false
@@ -21,15 +29,48 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - name: Find Simulator ID
-      id: id-finder
-      run: scripts/id.sh
+    # Workaround for Xcode/GitHub runner issues finding simulators.
+    # see https://github.com/actions/runner-images/issues/12758#issuecomment-3206748945
+    - name: Refresh Simulators
+      run: xcrun simctl list
+      shell: bash
+      if: inputs.refresh == 'true'
+    
+    - name: Parse Inputs
+      id: parse-inputs
+      run: ./scripts/parse-inputs.sh
       shell: bash
       env:
         INPUT_WORKSPACEPATH: ${{ inputs.workspace-path }}
         INPUT_SCHEME: ${{ inputs.scheme }}
         INPUT_TARGET: ${{ inputs.target }}
         INPUT_OSVERSION: ${{ inputs.os-version }}
+      # outputs:
+      #   parsed-workspace-path
+      #   parsed-scheme
+      #   parsed-platform
+      #   parsed-platform-regex
+      #   parsed-device-regex
+      #   parsed-os-version-regex
+      
+    # Workaround for Xcode/GitHub runner issues finding simulators.
+    # see https://github.com/actions/runner-images/issues/12758#issuecomment-3206748945
+    - Download Simulator for Platform
+      run: xcodebuild -downloadPlatform ${{ steps.interpret-target.outputs.SIMPLATFORM }}
+      shell: bash
+      if: inputs.download == 'true'
+      
+    - name: Find Simulator ID
+      id: id-finder
+      run: ./scripts/id.sh
+      shell: bash
+      env:
+        WORKSPACEPATH: ${{ steps.parse-inputs.outputs.parsed-workspace-path }}
+        SCHEME: ${{ steps.parse-inputs.outputs.parsed-scheme }}
+        SIMPLATFORM: ${{ steps.parse-inputs.outputs.parsed-platform }}
+        SIMPLATFORM_REGEX: ${{ steps.parse-inputs.outputs.parsed-platform-regex }}
+        SIMDEVICE_REGEX: ${{ steps.parse-inputs.outputs.parsed-device-regex }}
+        OSVERSION_REGEX: ${{ steps.parse-inputs.outputs.parsed-os-version-regex }}
 branding:
   icon: 'code'
   color: 'blue'
