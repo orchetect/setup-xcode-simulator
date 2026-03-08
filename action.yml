@@ -1,6 +1,6 @@
 name: 'Xcode Simulator Selector'
 author: 'Steffan Andrews'
-description: 'Dynamically finds the best available Xcode device simulator.'
+description: 'Dynamically find the best available Xcode device simulator.'
 inputs:
   scheme:
     description: 'Xcode scheme name that will be used when enumerating available device simulators.'
