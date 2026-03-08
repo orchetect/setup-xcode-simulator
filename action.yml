@@ -1,0 +1,36 @@
+name: 'Xcode Simulator Selector'
+author: 'Steffan Andrews'
+description: 'Dynamically finds the best available Xcode device simulator.'
+inputs:
+  scheme:
+    description: 'Xcode scheme name that will be used when enumerating available device simulators.'
+    required: true
+  platform:
+    description: 'Platform (iOS, tvOS, watchOS, visionOS).'
+    required: true
+  device:
+    description: 'Device (iphone, ipad, watch, appletv, visionpro, default).'
+    required: false
+    default: default
+  os:
+    description: 'Platform OS version.'
+    required: false
+outputs:
+  id:
+    description: "Simulator ID"
+    value: ${{ steps.id-finder.outputs.id }}
+runs:
+  using: "composite"
+  steps:
+    - name: Find Simulator ID
+      id: id-finder
+      run: scripts/id.sh
+      shell: bash
+      env:
+        SCHEME: ${{ inputs.scheme }}
+        SIMPLATFORM: ${{ inputs.platform }}
+        SIMDEVICE: ${{ inputs.device }}
+        SIMOS: ${{ inputs.os }}
+branding:
+  icon: 'code'
+  color: 'blue'
