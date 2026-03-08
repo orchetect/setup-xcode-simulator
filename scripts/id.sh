@@ -41,12 +41,13 @@ SIMPLATFORMS_REGEX="m/(.*)\t(.*)\t(.*)\t(.*)/g"
 if [[ -n $OSVERSION_REGEX ]]; then
   echo "Finding OS version using regex: ${OSVERSION_REGEX}."
   MATCHES=$(echo "${SIMPLATFORMS}" | perl -nle 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); if ($os =~ /'$OSVERSION_REGEX'/) { print "${name}\t${plat}\t${os}\t${id}"; } }')
+  MATCHESDESC=$(echo "${MATCHES}" | perl -nle 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); print "${name} (${plat} - ${os}) - ${id}"; }')
   TOPLINEMATCH=$(echo "${MATCHES}" | head -n 1)
   DESTID=$(echo "${TOPLINEMATCH}" | perl -le 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); if ($os =~ /'$OSVERSION_REGEX'/) { print "${id}"; } }')
   DESTDESC=$(echo "${TOPLINEMATCH}" | perl -le 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); if ($os =~ /'$OSVERSION_REGEX'/) { print "${name} (${plat} - ${os}) - ${id}"; } }' | head -n 1)
 else
   echo "Finding latest OS version for target."
-  MATCHES="$SIMPLATFORMS"
+  MATCHESDESC=$(echo "${SIMPLATFORMS}" | perl -nle 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); print "${name} (${plat} - ${os}) - ${id}"; }')
   TOPLINEMATCH=$(echo "${SIMPLATFORMS}" | head -1)
   DESTID=$(echo "${TOPLINEMATCH}" | perl -nle 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); print $id; }')
   DESTDESC=$(echo "${TOPLINEMATCH}" | perl -nle 'if ('$SIMPLATFORMS_REGEX') { ($name, $plat, $os, $id) = ($1, $2, $3, $4); print "${name} (${plat} - ${os}) - ${id}"; }')
@@ -54,7 +55,7 @@ fi
 
 # Provide diagnostic output of all matching simulators.
 echo "Available simulators matching the target:"
-echo "$(echo "$MATCHES" | while read line; do echo "- $line"; done)"
+echo "$(echo "$MATCHESDESC" | while read line; do echo "- $line"; done)"
 
 # Exit out if no simulators matched the criteria.
 if [[ -z $DESTID ]]; then echo "⛔️ Error: No matching simulators available."; exit 1; fi
