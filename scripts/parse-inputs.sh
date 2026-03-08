@@ -7,10 +7,11 @@
 # - INPUT_OSVERSION      optional
 
 # Step outputs produced:
-# - parsed-workspace-path
-# - parsed-scheme
-# - parsed-platform
-# - parsed-platform-regex
+# - parsed-workspace-path    Relative path to .xcworkspace file from repo root
+# - parsed-scheme            Xcode scheme name
+# - parsed-platform          Platform string (ie: "iOS Simulator") which can be used verbatim in `xcodebuild destination="platform=X"` in place of X
+# - parsed-platform-short    Platform short name (ie: "iOS")
+# - parsed-platform-regex    Platform name regex used when parsing simulator list output from `xcodebuild -showdestinations``
 # - parsed-device-regex
 # - parsed-os-version-regex
 
@@ -42,121 +43,121 @@ if [[ -n $OSVERSION_REGEX ]]; then echo "Using OS version regex: $OSVERSION_REGE
 INPUT_TARGET_LOWERCASE=$( tr '[:upper:]' '[:lower:]' <<<"$INPUT_TARGET" )
 case $INPUT_TARGET_LOWERCASE in
   ios)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPhone\s\d{2}\s"
     ;;
 
   tvos)
-    SIMPLATFORM="tvOS"
+    SIMPLATFORM_SHORT="tvOS"
     SIMPLATFORM_REGEX="tvOS"
     SIMDEVICE_REGEX="AppleTV"
     ;;
 
   watchos)
-    SIMPLATFORM="watchOS"
+    SIMPLATFORM_SHORT="watchOS"
     SIMPLATFORM_REGEX="watchOS"
     SIMDEVICE_REGEX="Apple\sWatch\sSeries"
     ;;
 
   visionos)
-    SIMPLATFORM="visionOS"
+    SIMPLATFORM_SHORT="visionOS"
     SIMPLATFORM_REGEX="visionOS"
     SIMDEVICE_REGEX="Apple\sVision\sPro"
     ;;
 
   iphone)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPhone\s\d{2}\s"
     ;;
   
   iphone-air)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPhone\sAir"
     ;;
   
   iphone-pro)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPhone\s\d{2}\sPro\s"
     ;;
   
   iphone-pro-max)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPhone\s\d{2}\sPro\sMax"
     ;;
   
   ipad)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPad\s"
     ;;
   
   ipad-air)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPad\sAir"
     ;;
   
   ipad-mini)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPad\smini"
     ;;
   
   ipad-pro)
-    SIMPLATFORM="iOS"
+    SIMPLATFORM_SHORT="iOS"
     SIMPLATFORM_REGEX="iOS"
     SIMDEVICE_REGEX="iPad\sPro"
     ;;
   
   tv)
-    SIMPLATFORM="tvOS"
+    SIMPLATFORM_SHORT="tvOS"
     SIMPLATFORM_REGEX="tvOS"
     SIMDEVICE_REGEX="Apple\sTV"
     ;;
   
   tv-4k)
-    SIMPLATFORM="tvOS"
+    SIMPLATFORM_SHORT="tvOS"
     SIMPLATFORM_REGEX="tvOS"
     SIMDEVICE_REGEX="Apple\sTV\s4K"
     ;;
   
   watch)
-    SIMPLATFORM="watchOS"
+    SIMPLATFORM_SHORT="watchOS"
     SIMPLATFORM_REGEX="watchOS"
     SIMDEVICE_REGEX="Apple\sWatch"
     ;;
   
   watch-se)
-    SIMPLATFORM="watchOS"
+    SIMPLATFORM_SHORT="watchOS"
     SIMPLATFORM_REGEX="watchOS"
     SIMDEVICE_REGEX="Apple\sWatch\sSE"
     ;;
   
   watch-series)
-    SIMPLATFORM="watchOS"
+    SIMPLATFORM_SHORT="watchOS"
     SIMPLATFORM_REGEX="watchOS"
     SIMDEVICE_REGEX="Apple\sWatch\sSeries"
     ;;
   
   watch-ultra)
-    SIMPLATFORM="watchOS"
+    SIMPLATFORM_SHORT="watchOS"
     SIMPLATFORM_REGEX="watchOS"
     SIMDEVICE_REGEX="Apple\sWatch\sUltra"
     ;;
     
   visionpro)
-    SIMPLATFORM="visionOS"
+    SIMPLATFORM_SHORT="visionOS"
     SIMPLATFORM_REGEX="visionOS"
     SIMDEVICE_REGEX="Apple\sVision\sPro"
     ;;
   
   visionpro-4k)
-    SIMPLATFORM="visionOS"
+    SIMPLATFORM_SHORT="visionOS"
     SIMPLATFORM_REGEX="visionOS"
     SIMDEVICE_REGEX="Apple\sVision\sPro\s4K"
     ;;
@@ -175,22 +176,26 @@ case $INPUT_TARGET_LOWERCASE in
     XCODE_OUTPUT_REGEX="m/\{\splatform:(.*\sSimulator),.*id:([A-F0-9\-]{36}),.*OS:(\d{1,2}\.\d),.*name:([a-zA-Z0-9\(\)\s]*)\s\}/g"
     
     # Parse out platform name from first sorted result.
-    SIMPLATFORM=$(echo "${XCODE_OUTPUT}" | perl -nle 'if ('$XCODE_OUTPUT_REGEX') { ($plat, $id, $os, $name) = ($1, $2, $3, $4); if ($name =~ /'$SIMDEVICE_REGEX'/) { print "${plat}"; } }' | sort -rV | head -n 1)
+    SIMPLATFORM_SHORT=$(echo "${XCODE_OUTPUT}" | perl -nle 'if ('$XCODE_OUTPUT_REGEX') { ($plat, $id, $os, $name) = ($1, $2, $3, $4); if ($name =~ /'$SIMDEVICE_REGEX'/) { print "${plat}"; } }' | sort -rV | head -n 1)
 
-    if [[ -n $SIMPLATFORM ]]; then
+    if [[ -n $SIMPLATFORM_SHORT ]]; then
       # Copy to regex as-is
-      SIMPLATFORM_REGEX="$SIMPLATFORM"
+      SIMPLATFORM_REGEX="$SIMPLATFORM_SHORT"
     else
       # If no platform is found, substitute with a pass-thru regex.
       # This should probably exit with an error code, but being more permissive may be useful.
-      SIMPLATFORM="Unknown"
+      SIMPLATFORM_SHORT="Unknown"
       SIMPLATFORM_REGEX=".*"
     fi
     ;;
 esac
 
+# Short Platform
+SIMPLATFORM="$SIMPLATFORM_SHORT Simulator"
+
 # Provide diagnostic output of platform and device regex strings.
-echo "Using platform: $SIMPLATFORM"
+echo "Using platform name: $SIMPLATFORM"
+echo "Using platform name (short): $SIMPLATFORM_SHORT"
 echo "Using platform name regex: $SIMPLATFORM_REGEX"
 echo "Using device name regex: $SIMDEVICE_REGEX"
 
@@ -198,6 +203,7 @@ echo "Using device name regex: $SIMDEVICE_REGEX"
 echo "parsed-workspace-path=$(echo $WORKSPACEPATH)" >> $GITHUB_OUTPUT
 echo "parsed-scheme=$(echo $SCHEME)" >> $GITHUB_OUTPUT
 echo "parsed-platform=$(echo $SIMPLATFORM)" >> $GITHUB_OUTPUT
+echo "parsed-platform-short=$(echo $SIMPLATFORM_SHORT)" >> $GITHUB_OUTPUT
 echo "parsed-platform-regex=$(echo $SIMPLATFORM_REGEX)" >> $GITHUB_OUTPUT
 echo "parsed-device-regex=$(echo $SIMDEVICE_REGEX)" >> $GITHUB_OUTPUT
 echo "parsed-os-version-regex=$(echo $OSVERSION_REGEX)" >> $GITHUB_OUTPUT

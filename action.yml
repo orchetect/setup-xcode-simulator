@@ -24,7 +24,10 @@ inputs:
     required: false
 
 outputs:
-  id:
+  destination-platform:
+    description: "Platform"
+    value: ${{ steps.parse-inputs.outputs.parsed-platform }}
+  destination-id:
     description: "Simulator ID"
     value: ${{ steps.id-finder.outputs.id }}
 
@@ -52,6 +55,7 @@ runs:
       #   parsed-workspace-path
       #   parsed-scheme
       #   parsed-platform
+      #   parsed-platform-short
       #   parsed-platform-regex
       #   parsed-device-regex
       #   parsed-os-version-regex
@@ -62,7 +66,7 @@ runs:
       if: inputs.download == 'true'
       env:
         GITHUB_ACTION_PATH: ${{ github.action_path }}
-        SIMPLATFORM: ${{ steps.parse-inputs.outputs.parsed-platform }}
+        SIMPLATFORM_SHORT: ${{ steps.parse-inputs.outputs.parsed-platform-short }}
         
     - name: Find Simulator ID
       id: id-finder
@@ -73,9 +77,13 @@ runs:
         WORKSPACEPATH: ${{ steps.parse-inputs.outputs.parsed-workspace-path }}
         SCHEME: ${{ steps.parse-inputs.outputs.parsed-scheme }}
         SIMPLATFORM: ${{ steps.parse-inputs.outputs.parsed-platform }}
+        SIMPLATFORM_SHORT: ${{ steps.parse-inputs.outputs.parsed-platform-short }}
         SIMPLATFORM_REGEX: ${{ steps.parse-inputs.outputs.parsed-platform-regex }}
         SIMDEVICE_REGEX: ${{ steps.parse-inputs.outputs.parsed-device-regex }}
         OSVERSION_REGEX: ${{ steps.parse-inputs.outputs.parsed-os-version-regex }}
+      # outputs:
+      #  destination-platform
+      #  destination-id
 
 branding:
   icon: 'code'
