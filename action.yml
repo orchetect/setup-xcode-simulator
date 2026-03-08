@@ -31,8 +31,6 @@ outputs:
 runs:
   using: "composite"
   steps:
-    # Workaround for Xcode/GitHub runner issues finding simulators.
-    # see https://github.com/actions/runner-images/issues/12758#issuecomment-3206748945
     - name: Refresh Simulators
       run: $GITHUB_ACTION_PATH/scripts/refresh.sh
       shell: bash
@@ -58,8 +56,6 @@ runs:
       #   parsed-device-regex
       #   parsed-os-version-regex
       
-    # Workaround for Xcode/GitHub runner issues finding simulators.
-    # see https://github.com/actions/runner-images/issues/12758#issuecomment-3206748945
     - name: Download Simulator for Platform
       run: $GITHUB_ACTION_PATH/scripts/download.sh
       shell: bash
