@@ -10,13 +10,13 @@ Over time, numerous quirks and edge cases of both GitHub actions runners and how
 
 This acton is designed as a one-stop shop to select and prepare a device simulator, primarily with the intention of running unit tests on the simulator.
 
-## Parameters
+## Input Parameters
 
 | Name             | Required | Description                                                  | Format                       |
 | ---------------- | -------- | ------------------------------------------------------------ | ---------------------------- |
 | `refresh`        | No       | Refresh Xcode simulators by first calling the simulator controller to refresh by listing all local simulators. | `true` or `false`            |
 | `download`       | No       | Asks the simulator controller to first download a relevant simulator for the platform specified by the target parameter. | `true` or `false`            |
-| `workspace-path` | No       | Relative path to the Xcode workspace. If the target is a Swift Package that exists in the root of the repository, omit this parameter. | Relative path from repo root |
+| `workspace-path` | No       | Relative Xcode workspace path. If the target is a Swift Package that exists in the root of the repository, omit this parameter. | Relative path from repo root |
 | `scheme`         | Yes      | Xcode scheme name that will be used when enumerating available device simulators. | String                       |
 | `target`         | Yes      | Target identifier (case-insensitive). See table below for full list of identifiers. | String                       |
 | `os-version`     | No       | Platform OS version (regular expression).                    | String                       |
@@ -49,6 +49,17 @@ Target identifiers supported, with tables listed in increasing degree of specifi
 | `tv-4k` | tvOS | Newest Apple TV 4K simulator | Newest OS version, unless specified |
 | `watch-se` | watchOS | Newest Apple Watch SE simulator | Newest OS version, unless specified |
 | `watch-series` | watchOS | Newest Apple Watch Series simulator | Newest OS version, unless specified |
+
+## Output Parameters
+
+The action outputs the following parameters:
+
+| Name                   | Description                                                  | Example                                |
+| ---------------------- | ------------------------------------------------------------ | -------------------------------------- |
+| `id`       | Verbatim simulator ID, usable in `xcodebuild test` destination. | `17FC425F-F336-48DC-8D5A-05DA7BCF7B7D` |
+| `platform` | Verbatim platform name, usable in `xcodebuild test` destination. | `iOS Simulator`                        |
+| `platform-short`       | Short platform name, usable in `xcodebuild build` generic destinations. | `iOS`                                  |
+| `workspace-path`       | Xcode workspace path relative to repo root | `Foo/Foo.xcodeproj/project.xcworkspace` |
 
 ## Usage
 
@@ -106,7 +117,6 @@ Prepare an iOS device simulator (defaults to iPhone) using the latest device and
 ```yaml
 env:
   SCHEME: "MySchemeName"
-  WORKSPACEPATH: ".swiftpm/xcode/package.xcworkspace" # Standard workspace location for Swift Package
   
 jobs:
   build:
@@ -126,15 +136,20 @@ jobs:
         xcodebuild build \
           -workspace "$WORKSPACEPATH" \
           -scheme "$SCHEME" \
-          -destination "generic/platform=iOS"
+          -destination "generic/platform=$PLATFORMSHORT"
+      env:
+        PLATFORMSHORT: ${{ steps.prep-sim.outputs.platform-short }}
+        WORKSPACEPATH: ${{ steps.prep-sim.outputs.workspace-path }}
     - name: Unit Test
       run: |
         xcodebuild test \
           -workspace "$WORKSPACEPATH" \
           -scheme "$SCHEME" \
-          -destination "platform=iOS Simulator,id=$DESTID"
+          -destination "platform=$PLATFORM,id=$ID"
       env:
-        DESTID: ${{ steps.prep-sim.outputs.id }}
+        ID: ${{ steps.prep-sim.outputs.id }}        
+        PLATFORM: ${{ steps.prep-sim.outputs.platform }}
+        WORKSPACEPATH: ${{ steps.prep-sim.outputs.workspace-path }}
 ```
 
 ## Documentation
