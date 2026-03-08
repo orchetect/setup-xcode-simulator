@@ -220,7 +220,7 @@ Coded by a bunch of 🐹 hamsters in a trenchcoat that calls itself [@orchetect]
 
 ## License
 
-Licensed under the MIT license. See [LICENSE](https://github.com/orchetect/xcode-simulator-setup/blob/master/LICENSE) for details.
+Licensed under the MIT license. See [LICENSE](https://github.com/orchetect/xcode-simulator-setup/blob/main/LICENSE) for details.
 
 ## Community & Support
 
