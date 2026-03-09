@@ -63,7 +63,10 @@ The action outputs the following parameters:
 
 ## Usage
 
-Prepare an iOS device simulator (defaults to iPhone) using the latest device and operating system version in order to test a Swift Package:
+Prepare an iOS device simulator (defaults to iPhone)
+
+- using the latest available device and latest available OS version
+- to test a Swift Package
 
 ```yaml
 jobs:
@@ -76,7 +79,44 @@ jobs:
         target: iOS
 ```
 
-Prepare an iOS device simulator (defaults to iPhone) using the latest device and operating system version in order to test an Xcode project named `MyProject.xcodeproj` located within the `MyProject` folder:
+Prepare an iOS device simulator (defaults to iPhone)
+
+- running iOS 26.2
+- to test a Swift Package
+
+```yaml
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: orchetect/setup-xcode-simulator@v1
+      with:
+        scheme: MySchemeName
+        target: iOS
+        os-version: 26.2
+```
+
+Prepare an iOS device simulator using the latest iPhone Pro Max device 
+
+- running the latest available version of iOS 18
+- to test a Swift Package
+
+```yaml
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+    - uses: orchetect/setup-xcode-simulator@v1
+      with:
+        scheme: MySchemeName
+        target: iphone-pro-max
+        os-version: 18.*
+```
+
+Prepare an iOS device simulator (defaults to iPhone)
+
+- using the latest available device and latest available OS version
+- to test an Xcode project named `MyProject.xcodeproj` located within the `MyProject` folder
 
 ```yaml
 jobs:
@@ -88,20 +128,6 @@ jobs:
         workspace-path: MyProject/MyProject.xcodeproj/project.xcworkspace
         scheme: MySchemeName
         target: iOS
-```
-
-Prepare an iOS device simulator using the latest iPhone Pro Max device running iOS 26.2:
-
-```yaml
-jobs:
-  build:
-    runs-on: macos-latest
-    steps:
-    - uses: orchetect/setup-xcode-simulator@v1
-      with:
-        scheme: MySchemeName
-        target: iphone-pro-max
-        os-version: 26.2
 ```
 
 ## Complete Examples
